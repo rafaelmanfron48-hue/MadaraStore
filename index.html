@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pt-BR" oncontextmenu="return false">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Madara Store</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+             --primary: #777777;
+            --bg-dark: #000000;
+            --sidebar-bg: #050505;
+            --card-bg: #0a0a0a;
+            --text-white: #ffffff;
+            --border: rgba(255, 255, 255, 0.2);
+            --success: #00ff88;
+            --aura: #ffffff;
+            --old-price: #666;       
+            --discount-bg: #000000;  
+
+
+        }
+
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; outline: none; text-decoration: none; 
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        
+        img { pointer-events: none; }
+
+        body {
+            background-color: var(--secondary);
+            color: var(--text-white);
+            height: 100vh; width: 100vw; overflow: hidden; display: flex;
+        }
+
+        .bg-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://img.freepik.com/fotos-gratis/fundo-abstrato-escuro_1048-1920.jpg'); 
+            background-size: cover; background-position: center;
+            z-index: -2; transition: all 0.5s ease;
+        }
+        
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.92); z-index: -1; 
+        }
+
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 150; display: none; backdrop-filter: blur(3px);
+            transition: opacity 0.3s;
+        }
+        
+        .sidebar-overlay.active { display: block; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+        h1, h2, h3 { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+
+        .checkout-section { margin-bottom: 20px; }
+        .checkout-label { color: var(--success); font-weight: bold; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; border-left: 3px solid var(--success); padding-left: 10px; }
+
+        .order-summary-box { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333; font-size: 13px; color: #ccc; }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        .summary-total { margin-top: 10px; font-size: 16px; font-weight: 800; color: var(--success); text-align: right; }
+
+        .pix-box { 
+            background: #000; border: 1px dashed #555; padding: 15px; 
+            text-align: center; border-radius: 8px; margin-top: 10px; 
+            font-family: monospace; font-size: 14px; color: #fff; letter-spacing: 0.5px;
+            user-select: all; cursor: pointer; word-break: break-all;
+        }
+        .pix-box:active { color: var(--success); border-color: var(--success); }
+
+        .checkout-input-group { margin-bottom: 15px; }
+        .checkout-input-label { color: #888; font-size: 12px; margin-bottom: 5px; display: block; font-weight: bold;}
+        .checkout-input { 
+            width: 100%; background: #080808; border: 1px solid #333; padding: 12px; 
+            color: #fff; border-radius: 5px; font-size: 13px; transition: 0.3s;
+        }
+        .checkout-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+
+        .terms-box {
+            background: #151515; padding: 10px; border-radius: 5px; border: 1px solid #333;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #ccc;
+        }
+        .terms-box input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+
+        .btn-confirm-payment {
+            width: 100%; padding: 15px; background: var(--success); color: #000;
+            font-weight: 800; border: none; border-radius: 5px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 10px;
+        }
+        .btn-confirm-payment:hover { box-shadow: 0 0 20px rgba(0,255,136,0.4); transform: scale(1.02); }
+        .btn-confirm-payment:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        .sidebar {
+            width: 260px; height: 100%;
+            background: var(--sidebar-bg); 
+            border-right: 2px solid var(--aura);
+            display: flex; flex-direction: column; padding: 20px;
+            z-index: 200; 
+            box-shadow: 5px 0 20px var(--aura);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .brand {
+            font-size: 24px; font-weight: 800; color: #fff; text-align: center;
+            margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;
+            text-shadow: 0 0 15px var(--aura);
+        }
+        .brand span { color: var(--primary); }
+        .user-box {
+            background: #151515; padding: 12px; border-radius: 8px; border: 1px solid #333;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+        }
+        .avatar {
+            width: 35px; height: 35px; background: var(--primary); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; color: #fff;
+        }
+        .menu-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .menu-item {
+            padding: 12px 15px; color: #ccc; cursor: pointer; border-radius: 6px;
+            transition: 0.2s; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600;
+        }
+        .menu-item:hover, .menu-item.active { background: var(--primary); color: #fff; box-shadow: 0 0 10px var(--aura); }
+
+        .content { flex: 1; height: 100%; overflow-y: auto; padding: 25px; position: relative; }
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; background: rgba(20,20,20,0.9); padding: 12px 20px;
+            border-radius: 10px; border: 1px solid #333; gap: 15px;
+            position: sticky; top: 0; z-index: 90; backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--primary);
+        }
+        .mobile-menu-btn { display: none; background: transparent; border: none; color: #fff; font-size: 22px; cursor: pointer; }
+        .search-wrap { position: relative; width: 350px; flex: 1; max-width: 500px; }
+        .search-wrap input {
+            width: 100%; background: #000; border: 1px solid #333; padding: 10px 15px 10px 35px;
+            border-radius: 20px; color: #fff; user-select: text; transition: 0.3s;
+        }
+        .search-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--aura); }
+        .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; }
+
+        .grid-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .card-cat {
+            background: #111; border: 1px solid #333; border-radius: 10px; height: 130px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; text-align: center; padding: 10px;
+        }
+        .card-cat:hover { 
+            border-color: var(--primary); transform: translateY(-5px); 
+            box-shadow: 0 0 20px var(--aura); 
+        }
+        .card-cat i { font-size: 32px; color: var(--primary); margin-bottom: 10px; }
+
+        .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .card-prod {
+            background: #111; border: 1px solid #333; border-radius: 10px; overflow: hidden;
+            display: flex; flex-direction: column; transition: 0.3s; position: relative;
+        }
+        .card-prod:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+        
+        .badge-discount {
+            position: absolute; top: 10px; left: 10px; background: var(--discount-bg); color: #000;
+            padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; z-index: 10;
+            box-shadow: 0 0 5px rgba(255,230,0,0.5); transform: rotate(-2deg);
+        }
+
+        .prod-img {
+            height: 140px; background: #080808; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border-bottom: 1px solid #333; position: relative;
+        }
+        .prod-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card-prod:hover .prod-img img { transform: scale(1.1); }
+        .emoji-fallback { font-size: 3.5rem; opacity: 0.7; }
+        .prod-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
+        .prod-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 5px; min-height: 35px; text-transform: uppercase; }
+        .prod-desc { font-size: 11px; color: #888; margin-bottom: 10px; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .price-container { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
+        .price-old { text-decoration: line-through; color: var(--old-price); font-size: 11px; font-weight: 500; }
+        .prod-price { font-size: 18px; font-weight: 800; color: var(--success); }
+        
+        .qty-control {
+            display: flex; gap: 5px; margin-bottom: 10px; align-items: center;
+        }
+        .qty-input {
+            width: 60px; background: #000; border: 1px solid #333; color: #fff; padding: 5px; text-align: center; border-radius: 4px;
+        }
+
+        .btn-buy {
+            width: 100%; padding: 10px; background: transparent; border: 1px solid var(--primary);
+            color: var(--primary); font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; font-size: 12px; letter-spacing: 1px;
+        }
+        .btn-buy:hover { background: var(--primary); color: #fff; box-shadow: 0 0 15px var(--aura); }
+
+        .order-card {
+            background: #151515; border: 1px solid #333; padding: 15px; border-radius: 8px;
+            margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .order-info { flex: 1; }
+        .order-date { font-size: 11px; color: #666; margin-bottom: 5px; }
+        .order-items { font-size: 13px; color: #ddd; font-weight: bold; }
+        .order-total { color: var(--success); font-weight: 800; font-size: 15px; }
+
+        .modal-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999; display: none;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px;
+        }
+        .modal-wrapper.active { display: flex; animation: fadeIn 0.2s; }
+        .modal-content {
+            background: #111; 
+            border: 2px solid var(--aura); 
+            padding: 30px;
+            border-radius: 15px; 
+            width: 450px; 
+            max-width: 95%; 
+            position: relative;
+            box-shadow: 0 0 50px var(--aura); 
+            text-align: left;
+            max-height: 85vh;   
+            overflow-y: auto;     
+            display: flex;        
+            flex-direction: column; 
+        }
+        .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: #666; transition: 0.2s; }
+        .modal-close:hover { color: var(--primary); }
+        .input-box {
+            width: 100%; background: #222; border: 1px solid #444; color: #fff;
+            padding: 12px; margin-bottom: 15px; border-radius: 5px; user-select: text;
+        }
+        
+        .file-upload-box {
+            border: 2px dashed #444; border-radius: 8px; padding: 20px; text-align: center;
+            cursor: pointer; transition: 0.3s; color: #888; font-size: 12px; position: relative;
+        }
+        .file-upload-box:hover { border-color: var(--primary); color: #fff; }
+        .file-upload-box input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .cart-drawer {
+            position: fixed; top: 0; right: -400px; width: 350px; height: 100%;
+            background: #0f0f0f; border-left: 2px solid var(--primary); z-index: 5000;
+            padding: 20px; display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+        }
+        .cart-drawer.active { right: 0; }
+        .coupon-area { background: #1a1a1a; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #444; }
+        .coupon-flex { display: flex; gap: 5px; }
+        .coupon-input { flex: 1; background: #000; border: 1px solid #333; padding: 5px 10px; color: #fff; border-radius: 4px; font-size: 12px; text-transform: uppercase; user-select: text; }
+        .btn-coupon { background: #333; color: #fff; border: 1px solid #555; cursor: pointer; padding: 0 10px; border-radius: 4px; font-size: 12px; }
+
+        .chat-trigger {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background: var(--primary); border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 28px;
+            z-index: 4000; box-shadow: 0 0 20px var(--aura);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px var(--aura); transform: scale(1); }
+            50% { box-shadow: 0 0 40px var(--aura); transform: scale(1.05); }
+        }
+        .chat-box {
+            position: fixed; bottom: 100px; right: 30px; width: 340px; height: 480px;
+            background: #111; border: 2px solid var(--primary); border-radius: 15px;
+            display: none; flex-direction: column; z-index: 4001;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        }
+        .chat-box.active { display: flex; animation: slideUp 0.3s; }
+        .chat-header {
+            background: var(--primary); padding: 15px; font-weight: bold; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-top-left-radius: 12px; border-top-right-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .chat-messages {
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            background: #0a0a0a; scroll-behavior: smooth;
+        }
+        .msg {
+            max-width: 85%; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5;
+            user-select: text; word-wrap: break-word;
+        }
+        .msg.bot { background: #1a1a1a; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #333; }
+        .msg.user { background: var(--primary); align-self: flex-end; border-bottom-right-radius: 2px; color: #fff; }
+        .chat-input-area {
+            padding: 10px; background: #1a1a1a; display: flex; gap: 8px;
+            border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+        }
+        .chat-input {
+            flex: 1; background: #000; border: 1px solid #333; padding: 10px; color: #fff;
+            border-radius: 20px; font-size: 12px; user-select: text;
+        }
+        .chat-send {
+            width: 35px; height: 35px; background: var(--primary); border-radius: 50%;
+            border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; z-index: 5000; }
+            .sidebar.active { left: 0; }
+            .mobile-menu-btn { display: block; }
+            .search-wrap { display: none; }
+            .mobile-search-container { display: block !important; margin-bottom: 20px; }
+            .mobile-search-container input { width: 100%; background: #111; border: 1px solid #333; padding: 12px 15px; border-radius: 8px; color: #fff; user-select: text; }
+            .content { width: 100%; padding: 15px; padding-bottom: 90px; }
+            .grid-cats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .grid-prods { grid-template-columns: 1fr; gap: 15px; }
+            .cart-drawer { width: 100%; right: -100%; }
+            .chat-box { width: 92%; right: 4%; bottom: 95px; height: 60vh; }
+        }
+        .mobile-search-container { display: none; }
+    </style>
+</head>
+<body oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+    
+    <div class="bg-fixed" id="main-bg"></div>
+    <div class="bg-overlay"></div>
+    
+    <div id="modal-checkout" class="modal-wrapper">
+        <div class="modal-content">
+            <i class="fas fa-times modal-close" onclick="closeModal('modal-checkout')"></i>
+            <h2 style="text-align:center; color:var(--primary); margin-bottom:20px; text-transform: uppercase; letter-spacing: 2px;">Finalizar Compra</h2>
+            
+            <div class="checkout-section">
+                <div class="checkout-label">1. Resumo do Pedido</div>
+                <div class="order-summary-box" id="checkout-items-list"></div>
+            </div>
+
+            <div class="checkout-section">
+                <div class="checkout-label">2. Pagamento via PIX</div>
+                <p style="font-size:12px; color:#888; margin-bottom:5px;">Copie a chave abaixo e faça o pagamento do valor total.</p>
+                <div class="pix-box" onclick="copyPixKey()" title="Clique para copiar">rafaelmanfron48@gmail.com</div>
+            </div>
+
+            <div class="checkout-section">
+                <div class="checkout-label">3. Confirmação</div>
+                
+                <div class="checkout-input-group">
+                    <label class="checkout-input-label">SEU CONTATO (Discord/Zap/Email)</label>
+                    <input type="text" id="buyer-contact" class="checkout-input" placeholder="Ex: madara#1234" required>
+                </div>
+
+                <div class="checkout-input-group">
+                    <label class="checkout-input-label">ENVIAR COMPROVANTE (Imagem/PDF)</label>
+                    <div class="file-upload-box" style="padding: 15px; border: 1px dashed #555;">
+                        <i class="fas fa-camera" style="font-size:20px; margin-bottom:5px;"></i><br>
+                        <span id="file-name-display">Clique para selecionar o arquivo</span>
+                        <input type="file" id="payment-proof-file" accept="image/*, application/pdf" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : 'Clique para selecionar'">
+                    </div>
+                </div>
+
+                <div class="terms-box">
+                    <input type="checkbox" id="terms-check">
+                    <label for="terms-check">Li e concordo que os produtos são digitais e os prazos dependem da análise.</label>
+                </div>
+
+                <button class="btn-confirm-payment" onclick="submitOrderToWebhook()">
+                    <i class="fas fa-check-circle"></i> ENVIAR PEDIDO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" onclick="closeSidebarMobile()"></div>
+
+    <div id="modal-login" class="modal-wrapper active">
+        <div class="modal-content" style="text-align: center;">
+            <h1 style="color:var(--primary); margin-bottom:10px;">MADARA STORE</h1>
+            <p style="color:#888; margin-bottom:20px;">Acesso ao Painel</p>
+            <form id="form-login">
+                <input type="text" id="login-user" class="input-box" placeholder="Nome de Usuário" required>
+                <input type="password" id="login-pass" class="input-box" placeholder="Senha" required>
+                <p style="font-size: 11px; color:#666; margin-bottom: 15px;">Se não tiver conta, ela será criada automaticamente.</p>
+                <button type="submit" class="btn-buy" style="background:var(--primary); color:#fff; padding:12px;">ACESSAR / CRIAR</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-success" class="modal-wrapper">
+        <div class="modal-content" style="text-align:center;">
+            <i class="fas fa-check-circle" style="font-size:50px; color:var(--success); margin-bottom:20px;"></i>
+            <h2 style="color:var(--success);">PEDIDO ENVIADO!</h2>
+            <p style="color:#ccc; margin-top:10px; font-size:14px;">
+                Recebemos seu comprovante e seus dados.<br>
+                O pedido foi salvo na aba <b>Meus Pedidos</b>.<br>
+                A entrega será feita no contato informado.<br><br>
+                <b>Fique de olho no seu Discord/Email!</b>
+            </p>
+            <button class="btn-buy" style="margin-top:20px; width:100%;" onclick="closeModal('modal-success'); nav('orders');">VER MEUS PEDIDOS</button>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="brand">Madara<span>Store</span></div>
+        <div class="user-box">
+            <div class="avatar" id="avatar-letter">?</div>
+            <div>
+                <div style="font-size:14px; font-weight:bold;" id="user-display">Visitante</div>
+                <div style="font-size:11px; color:var(--success);">Online</div>
+            </div>
+        </div>
+        <div class="menu-list">
+            <div class="menu-item active" onclick="nav('home'); toggleSidebar()"><i class="fas fa-home"></i> Início</div>
+            <div class="menu-item" onclick="toggleCart(); toggleSidebar()"><i class="fas fa-shopping-cart"></i> Carrinho <span id="badge-cart" style="margin-left:auto; background:#fff; color:#000; padding:2px 6px; border-radius:10px; font-size:10px;">0</span></div>
+            <div class="menu-item" onclick="nav('orders'); toggleSidebar()"><i class="fas fa-box-open"></i> Meus Pedidos</div>
+            <div class="menu-item" onclick="openDiscord(); toggleSidebar()"><i class="fab fa-discord"></i> Discord</div>
+            <div class="menu-item" onclick="logout()" style="color:#e90000; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="top-bar">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input-desktop" placeholder="Pesquisar skripts, servidores..." onkeyup="doSearch(this.value)">
+            </div>
+            <button class="btn-buy" style="width:auto; padding:8px 15px;" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i></button>
+        </div>
+
+        <div class="mobile-search-container">
+            <input type="text" id="search-input-mobile" placeholder="🔍 O que você procura?" onkeyup="doSearch(this.value)">
+        </div>
+
+        <div id="view-home">
+            <h2 style="border-left:5px solid var(--primary); padding-left:15px; margin-bottom:20px; font-size:22px;">CATEGORIAS</h2>
+            <div class="grid-cats" id="container-cats"></div>
+        </div>
+
+        <div id="view-orders" class="hidden">
+            <h2 style="border-left:5px solid var(--success); padding-left:15px; margin-bottom:20px; font-size:22px;">MEUS PEDIDOS</h2>
+            <div id="orders-list"></div>
+        </div>
+
+        <div id="view-prods" class="hidden">
+            <button class="btn-buy" style="width:auto; margin-bottom:20px; padding:8px 15px;" onclick="nav('home')"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+            <h2 id="cat-title" style="border-left:5px solid var(--primary); padding-left:15px; margin-bottom:20px; font-size:22px;">...</h2>
+            <div class="grid-prods" id="container-prods"></div>
+        </div>
+    </div>
+
+    <div class="cart-drawer" id="cart-drawer">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
+            <h2>CARRINHO</h2>
+            <i class="fas fa-times" style="cursor:pointer; font-size:24px;" onclick="toggleCart()"></i>
+        </div>
+        <div id="cart-list" style="flex:1; overflow-y:auto;"></div>
+        <div class="coupon-area">
+            <div class="coupon-flex">
+                <input type="text" id="coupon-code" class="coupon-input" placeholder="CUPOM">
+                <button onclick="applyCoupon()" class="btn-coupon">USAR</button>
+            </div>
+            <span id="coupon-feedback" style="font-size:11px; margin-top:5px; display:block;"></span>
+        </div>
+        <div style="border-top:1px solid #333; padding-top:20px;">
+            <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:bold; margin-bottom:15px;">
+                <span>TOTAL:</span> <span id="cart-total" style="color:#fff;">R$ 0,00</span>
+            </div>
+            <button class="btn-buy" style="background:#25D366; color:#000; border-color:#25D366; padding:12px;" onclick="openCheckout()">
+                <i class="fas fa-check-circle"></i> FINALIZAR COMPRA
+            </button>
+        </div>
+    </div>
+
+    <div class="chat-trigger" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
+    <div class="chat-box" id="chat-box">
+        <div class="chat-header">
+            <span>Suporte Madara</span> 
+            <i class="fas fa-times" onclick="toggleChat()" style="cursor:pointer;"></i>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="msg bot">Olá! Bem-vindo à Madara Store. Como posso ajudar?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Digite aqui..." onkeypress="handleChat(event)">
+            <button class="chat-send" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+<script>
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1477803207752159312/ebkeZ4PJsFAml3_kDZhXLdsA8mN7rRo9H0Np5605Hp_GZtPzizD4u1osxEbkgwiVs354";
+    const PIX_KEY = "rafaelmanfron48@gmail.com";
+    
+    const couponsDB = { 'MADARA10': 0.10, 'PRETO': 0.05 };
+
+    const db = [
+        { 
+            id: 1, 
+            name: "Menu de Modos", 
+            price: 30.00, 
+            image: "fa-code", 
+            cat: "Skripts (Plugin)", 
+            desc: "Abre um menu personalizado de modos com uma infraestrutura profissional. Quando ativado adiciona AW (Armoures Work Shop) no jogador (Configurável) e adiciona status do mod no jogador (Configurável)."
+        },
+        { 
+            id: 2, 
+            name: "Menu de Warps", 
+            price: 15.00, 
+            image: "fa-code", 
+            cat: "Skripts (Plugin)", 
+            desc: "Menu de Warps personalizado com uma insfraestrutura profissional. O SK é totalmente configurável."
+        },
+        { 
+            id: 3, 
+            name: "Auto-Restart", 
+            price: 5.00,
+            image: "fa-code", 
+            cat: "Skripts (Plugin)", 
+            desc: "Auto-Restart no seu servidor, isso evita lags e o servidor crashar. Possui o comando /timer que irá mostrar quanto tempo falta para reiniciar."
+        },
+        { 
+            id: 4, 
+            name: "Dungeon", 
+            price: 10.00, 
+            image: "fa-code", 
+            cat: "Skripts (Plugin)", 
+            desc: "Sistema de Dungeon onde o player é teleportado para uma warp e começará a spawnar NPC'S para ele matar, ao final ele irá ganhar uma recompensa. (Configurável)"
+        },
+        { 
+            id: 5, 
+            name: "Comidas", 
+            price: 5.00, 
+            image: "fa-code", 
+            cat: "Skripts (Plugin)", 
+            desc: "Sistema de comidas onde quando o jogador comer algo vai recuperar atributos ou dar atributos (Configurável)"
+        },
+        { 
+            id: 6, 
+            name: "Naruto C", 
+            price: 250.00, 
+            image: "fa-scroll", 
+            cat: "Servidores Prontos", 
+            desc: "Servidor completo com 600 quests, ranks, modos e skripts complexos. O servidor está totalmente balanceado com tudo pronto, só pegar e lançar."
+        },
+        { 
+            id: 7, 
+            name: "Naruto C Texture", 
+            price: 35.00, 
+            image: "fa-palette", 
+            cat: "Texturas", 
+            desc: "Textura para servidores de Naruto. Contém espadas, itens e diversas outras coisas personalizadas para Naruto, tem hotbar personalizada, mira personalizada e invetário personalizado."
+        }
+    ];
+
+    const icons = {
+        "skripts (plugin)": "fas fa-code",
+        "servidores prontos": "fas fa-server",
+        "texturas": "fas fa-palette"
+    };
+
+    let cart = [];
+    let user = null;
+    let activeDiscount = 0;
+
+    window.onload = () => {
+        const saved = localStorage.getItem('madara_current_user');
+        if(saved) {
+            user = saved;
+            document.getElementById('modal-login').classList.remove('active');
+            updateUserDisplay();
+        }
+        renderCats();
+        renderOrders();
+    };
+
+    function nav(loc) {
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('view-prods').classList.add('hidden');
+        document.getElementById('view-orders').classList.add('hidden');
+
+        if(loc === 'home') {
+            document.getElementById('view-home').classList.remove('hidden');
+            document.getElementById('search-input-desktop').value = '';
+            document.querySelector('.menu-item:first-child').classList.add('active');
+        }
+        else if(loc === 'orders') {
+            document.getElementById('view-orders').classList.remove('hidden');
+            renderOrders();
+        }
+    }
+
+    function renderCats() {
+        const allCats = [...new Set(db.map(i => i.cat))];
+        document.getElementById('container-cats').innerHTML = allCats.map(c => `
+            <div class="card-cat" onclick="openCat('${c}')"><i class="${icons[c.toLowerCase()] || 'fas fa-gamepad'}"></i><span>${c}</span></div>`).join('');
+    }
+
+    function openCat(catName) {
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('view-orders').classList.add('hidden');
+        document.getElementById('view-prods').classList.remove('hidden');
+        document.getElementById('cat-title').innerText = catName.toUpperCase();
+        
+        const items = db.filter(i => i.cat.toLowerCase() === catName.toLowerCase());
+        renderProducts(items);
+    }
+
+    function renderProducts(items) {
+        const container = document.getElementById('container-prods');
+        container.innerHTML = items.map(p => {
+            let displayPrice = `R$ ${p.price.toFixed(2)}`;
+            const chaoticSeed = Math.abs(Math.sin(p.id * 9999));
+            const randomPercent = Math.floor(chaoticSeed * 40) + 10; 
+            const calcOldPrice = p.price / (1 - (randomPercent / 100));
+            let oldPriceHtml = `<span class="price-old">R$ ${calcOldPrice.toFixed(2)}</span>`;
+            let discountBadge = `<div class="badge-discount">-${randomPercent}%</div>`;
+
+            const imgHTML = p.image.includes('http') ? `<img src="${p.image}">` : `<div class="emoji-fallback"><i class="fas ${p.image}"></i></div>`;
+
+            let clickAction = `addToCart('${p.name.replace(/'/g, "\\'")}', ${p.price}, 'qtd-${p.id}')`;
+
+            return `
+            <div class="card-prod" onclick="event.stopPropagation(); ${clickAction}">
+                ${discountBadge}
+                <div class="prod-img">
+                    ${imgHTML}
+                </div>
+                <div class="prod-body">
+                    <div class="prod-title">${p.name}</div>
+                    <div class="prod-desc">${p.desc}</div>
+                    <div class="price-container">
+                        ${oldPriceHtml}
+                        <span class="prod-price">${displayPrice}</span>
+                    </div>
+                    
+                    <div class="qty-control" onclick="event.stopPropagation();">
+                        <span style="font-size: 11px; color: #888;">Qtd:</span>
+                        <input type="number" id="qtd-${p.id}" value="1" min="1" class="qty-input">
+                    </div>
+
+                    <button class="btn-buy" onclick="event.stopPropagation(); ${clickAction}">ADICIONAR</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function doSearch(val) {
+        if(!val) return nav('home');
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('view-orders').classList.add('hidden');
+        document.getElementById('view-prods').classList.remove('hidden');
+        document.getElementById('cat-title').innerText = "BUSCA";
+        
+        const lowerVal = val.toLowerCase();
+        const items = db.filter(i => i.name.toLowerCase().includes(lowerVal) || i.cat.toLowerCase().includes(lowerVal));
+        renderProducts(items);
+    }
+
+    function toggleCart() { document.getElementById('cart-drawer').classList.toggle('active'); }
+    
+    function addToCart(name, price, qtyInputId = null) {
+        let quantity = 1;
+        if (qtyInputId) {
+            const input = document.getElementById(qtyInputId);
+            if (input) {
+                quantity = parseInt(input.value);
+                if (quantity < 1 || isNaN(quantity)) quantity = 1;
+            }
+        }
+        for (let i = 0; i < quantity; i++) {
+            cart.push({name, price});
+        }
+        updateCartUI();
+        const drawer = document.getElementById('cart-drawer');
+        if(!drawer.classList.contains('active')) drawer.classList.add('active');
+    }
+
+    function applyCoupon() {
+        const code = document.getElementById('coupon-code').value.toUpperCase();
+        const feedback = document.getElementById('coupon-feedback');
+        if (couponsDB[code]) {
+            activeDiscount = couponsDB[code];
+            feedback.innerText = `Desconto de ${(activeDiscount*100)}% aplicado!`;
+            feedback.style.color = "var(--success)";
+            updateCartUI();
+        } else {
+            feedback.innerText = "Cupom inválido.";
+            feedback.style.color = "red";
+        }
+    }
+
+    function updateCartUI() {
+        document.getElementById('badge-cart').innerText = cart.length;
+        const div = document.getElementById('cart-list');
+        if(cart.length === 0) div.innerHTML = "<p style='text-align:center;color:#666;margin-top:20px'>Carrinho Vazio</p>";
+        else {
+            div.innerHTML = cart.map((item, i) => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
+                    <div style="width:80%;">
+                        <div style="font-weight:bold; font-size:12px; color:#fff;">${item.name}</div>
+                        <div style="color:#aaa; font-size:11px;">R$ ${item.price.toFixed(2)}</div>
+                    </div>
+                    <i class="fas fa-trash" style="color:#ff4444; cursor:pointer;" onclick="cart.splice(${i},1); updateCartUI()"></i>
+                </div>`).join('');
+        }
+        const total = cart.reduce((a,b) => a + b.price, 0) * (1 - activeDiscount);
+        document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+    }
+    
+    function openCheckout() {
+        if(cart.length === 0) return alert("Seu carrinho está vazio!");
+        if(!user) return alert("Faça login para continuar!");
+        toggleCart();
+        
+        const listDiv = document.getElementById('checkout-items-list');
+        let itemsHtml = '';
+        let subtotal = 0;
+        cart.forEach(i => {
+            itemsHtml += `<div class="summary-item"><span>${i.name}</span><span>R$ ${i.price.toFixed(2)}</span></div>`;
+            subtotal += i.price;
+        });
+        const total = subtotal * (1 - activeDiscount);
+        const discountText = activeDiscount > 0 ? `<div style="color:var(--gold); font-size:12px; text-align:right;">Desconto: ${(activeDiscount*100)}% OFF</div>` : '';
+        itemsHtml += `${discountText}<div class="summary-total">Total: R$ ${total.toFixed(2)}</div>`;
+        listDiv.innerHTML = itemsHtml;
+        
+        document.getElementById('buyer-contact').value = "";
+        document.getElementById('payment-proof-file').value = "";
+        document.getElementById('file-name-display').innerText = "Clique para selecionar o arquivo";
+        document.getElementById('terms-check').checked = false; 
+        
+        openModal('modal-checkout');
+    }
+
+    function copyPixKey() { navigator.clipboard.writeText(PIX_KEY).then(() => alert("Chave PIX copiada!")); }
+
+    function renderOrders() {
+        const div = document.getElementById('orders-list');
+        if(!user) {
+            div.innerHTML = "<p style='color:#666; text-align:center;'>Faça login para ver seus pedidos.</p>";
+            return;
+        }
+        const key = `madara_orders_${user}`;
+        const orders = JSON.parse(localStorage.getItem(key)) || [];
+        
+        if(orders.length === 0) {
+            div.innerHTML = "<p style='color:#666; text-align:center;'>Você ainda não fez nenhum pedido.</p>";
+        } else {
+            div.innerHTML = orders.map(o => `
+                <div class="order-card">
+                    <div class="order-info">
+                        <div class="order-date">Pedido ${o.id} • ${o.date}</div>
+                        <div class="order-items">${o.items}</div>
+                    </div>
+                    <div class="order-total">${o.total}</div>
+                </div>
+            `).join('');
+        }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    
+    document.getElementById('form-login').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userInput = document.getElementById('login-user').value.trim();
+        const passInput = document.getElementById('login-pass').value.trim();
+        
+        if(!userInput || !passInput) return alert("Preencha todos os campos");
+
+        const usersDB = JSON.parse(localStorage.getItem('madara_users_db')) || {};
+
+        if (usersDB[userInput]) {
+            if (usersDB[userInput] === passInput) {
+                loginSuccess(userInput);
+            } else {
+                alert("Senha incorreta!");
+            }
+        } else {
+            usersDB[userInput] = passInput;
+            localStorage.setItem('madara_users_db', JSON.stringify(usersDB));
+            alert("Conta criada com sucesso!");
+            loginSuccess(userInput);
+        }
+    });
+
+    function loginSuccess(u) {
+        user = u;
+        localStorage.setItem('madara_current_user', user);
+        document.getElementById('modal-login').classList.remove('active');
+        updateUserDisplay();
+        renderOrders();
+    }
+
+    function updateUserDisplay() { document.getElementById('user-display').innerText = user; document.getElementById('avatar-letter').innerText = user.charAt(0).toUpperCase(); }
+    function logout() { localStorage.removeItem('madara_current_user'); location.reload(); }
+    
+    function toggleSidebar() { 
+        if (window.innerWidth > 768) return;
+        document.getElementById('sidebar').classList.toggle('active'); 
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (document.getElementById('sidebar').classList.contains('active')) {
+            overlay.classList.add('active');
+        } else {
+            overlay.classList.remove('active');
+        }
+    }
+    
+    function closeSidebarMobile() {
+        document.getElementById('sidebar').classList.remove('active');
+        document.querySelector('.sidebar-overlay').classList.remove('active');
+    }
+
+    function openDiscord() { window.open(`https://discord.gg/Tq26gE3TBp`, '_blank'); }
+
+    function toggleChat() { document.getElementById('chat-box').classList.toggle('active'); }
+
+    function handleChat(e) { if(e.key === 'Enter') sendChatMessage(); }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const txt = input.value.trim();
+        if(!txt) return;
+        
+        const area = document.getElementById('chat-messages');
+        area.innerHTML += `<div class="msg user">${txt}</div>`;
+        input.value = '';
+        area.scrollTop = area.scrollHeight;
+
+        setTimeout(() => {
+            botLogic(txt, area);
+        }, 1000);
+    }
+
+    function botLogic(txt, area) {
+        txt = txt.toLowerCase();
+        let reply = "Para comprar, adicione ao carrinho, clique em finalizar e realize o PIX. Se tiver dúvidas complexas, entre no nosso Discord!";
+        if(txt.includes('discord') || txt.includes('ticket')) {
+            reply = "Nosso Discord é: https://discord.gg/Tq26gE3TBp";
+        }
+        area.innerHTML += `<div class="msg bot">${reply}</div>`;
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function saveOrderLocally(items, total, externalId) {
+        if(!user) return;
+        
+        const order = {
+            id: externalId,
+            date: new Date().toLocaleDateString('pt-BR'),
+            items: items.map(i => i.name).join(', '),
+            total: total
+        };
+        
+        const key = `madara_orders_${user}`;
+        let orders = JSON.parse(localStorage.getItem(key)) || [];
+        orders.unshift(order);
+        localStorage.setItem(key, JSON.stringify(orders));
+    }
+
+    function submitOrderToWebhook() {
+        const contactInput = document.getElementById('buyer-contact');
+        const fileInput = document.getElementById('payment-proof-file');
+        const termsCheck = document.getElementById('terms-check');
+
+        if (!contactInput || !fileInput) return alert("Erro interno nos campos.");
+        
+        const contact = contactInput.value;
+        const file = fileInput.files[0];
+        
+        if(!contact) return alert("Preencha o contato!");
+        if(!file) return alert("Anexe o comprovante!");
+        if(!termsCheck.checked) return alert("Aceite os termos!");
+
+        const btn = document.querySelector('.btn-confirm-payment');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ENVIANDO...';
+        btn.disabled = true;
+
+        const safeCart = cart || [];
+        const safeDiscount = activeDiscount || 0;
+        const orderId = '#' + Math.floor(Math.random() * 90000 + 10000);
+        
+        const rawTotal = safeCart.reduce((a,b) => a + b.price, 0);
+        const finalTotal = rawTotal * (1 - safeDiscount);
+        
+        const itemsReceipt = safeCart.map(i => `📦 ${i.name}\n   └─ 💵 R$ ${i.price.toFixed(2)}`).join('\n\n');
+
+        saveOrderLocally(safeCart, `R$ ${finalTotal.toFixed(2)}`, orderId);
+
+        const formData = new FormData();
+        const payloadJson = {
+            username: "Madara Sales Bot",
+            embeds: [{
+                title: `✅ PEDIDO APROVADO: ${orderId}`,
+                description: "Pagamento enviado para análise.",
+                color: 16711680,
+                fields: [
+                    { name: "👤 Cliente", value: `**User:** ${user || "Anônimo"}\n**Contato:** \`${contact}\``, inline: true },
+                    { name: "💰 Total", value: `\`R$ ${finalTotal.toFixed(2)}\``, inline: true },
+                    { name: "🛒 Lista", value: `\`\`\`text\n${itemsReceipt}\n\`\`\``, inline: false }
+                ]
+            }]
+        };
+
+        formData.append('payload_json', JSON.stringify(payloadJson));
+        formData.append('file', file);
+
+        fetch(WEBHOOK_URL, { method: "POST", body: formData })
+        .then(res => {
+            if(res.ok) {
+                closeModal('modal-checkout');
+                cart = [];
+                updateCartUI();
+                openModal('modal-success');
+            } else alert("Erro no envio (Imagem muito grande?)");
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    window.addEventListener("keydown", e => {
+      const k = e.key.toLowerCase();
+      if (
+        k === "f12" ||
+        (e.ctrlKey && k === "u") ||
+        (e.ctrlKey && k === "s") ||
+        (e.ctrlKey && k === "p") ||
+        (e.ctrlKey && e.shiftKey && ["i","j","c","k"].includes(k))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    });
+        
+    (function() {
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.ondragstart = () => false;
+        document.onselectstart = () => false;
+    })();
+</script>
+</body>
+</html>
